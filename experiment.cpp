@@ -107,62 +107,7 @@ void showUsage() {
     cout<<endl;
 }
 
-double compute_ttc(Mat Im1, Mat Im2){
-	Mat dst1;
-	Mat dst2;
-	Mat sIm1;
-	Mat sIm2;
-	//Gaussian Filter
-	for (int i = 1; i < 3; i = i + 2)
-	{
-		GaussianBlur(Im1, dst1, Size(i, i), 0, 0);
-	}
-	for (int j = 1; j < 3; j = j + 2)
-	{
-		GaussianBlur(Im2, dst2, Size(j, j), 0, 0);
-	}
-	//crop the image
-	//if (Num < 44){
-	sIm1 = cv::Mat(dst1, cv::Rect(29, 0, 133, 70));//(29,0,133,70)(19,0,60,35)
-	sIm2 = cv::Mat(dst2, cv::Rect(29, 0, 133, 70));
-	//}
-	int Height = sIm1.rows;
-	int Width = sIm2.cols;
-	Mat smallIm1;
-	Mat smallIm2;
-	sIm1.convertTo(smallIm1, CV_64F);
-	sIm2.convertTo(smallIm2, CV_64F);
-        //defined all needed matrix
-	Mat Ix(Height - 2, Width - 2, DataType<double>::type);
-	Mat Iy(Height - 2, Width - 2, DataType<double>::type);
-	Mat It(Height - 2, Width - 2, DataType<double>::type);
-	Mat G(Height - 2, Width - 2, DataType<double>::type);
-	Mat A(3, 3, DataType<double>::type);
-	Mat B(3, 1, DataType<double>::type);
-	Mat C(3, 1, DataType<double>::type);
-	Mat sumA00; Mat sumA01; Mat sumA02; Mat sumA10; Mat sumA11; Mat sumA12; Mat sumA20; Mat sumA21; Mat sumA22;
-	Mat sumB00; Mat sumB10; Mat sumB20;
-	int m = Height;
-	int n = Width;
-	Ix = (smallIm1(Range(2, m), Range(1, n - 1)) - smallIm1(Range(1, m - 1), Range(1, n - 1)) + smallIm1(Range(2, m), Range(2, n)) - smallIm1(Range(1, m - 1), Range(2, n)) + smallIm2(Range(2, m), Range(1, n - 1)) - smallIm2(Range(1, m - 1), Range(1, n - 1)) + smallIm2(Range(2, m), Range(2, n)) - smallIm2(Range(1, m - 1), Range(2, n))) / 4;
-	Iy = (smallIm1(Range(1, m - 1), Range(2, n)) - smallIm1(Range(1, m - 1), Range(1, n - 1)) + smallIm1(Range(2, m), Range(2, n)) - smallIm1(Range(2, m), Range(1, n - 1)) + smallIm2(Range(1, m - 1), Range(2, n)) - smallIm2(Range(1, m - 1), Range(1, n - 1)) + smallIm2(Range(2, m), Range(2, n)) - smallIm2(Range(2, m), Range(1, n - 1))) / 4;
-	It = (smallIm2(Range(1, m - 1), Range(1, n - 1)) - smallIm1(Range(1, m - 1), Range(1, n - 1)) + smallIm2(Range(2, m), Range(1, n - 1)) - smallIm1(Range(2, m), Range(1, n - 1)) + smallIm2(Range(1, m - 1), Range(2, n)) - smallIm1(Range(1, m - 1), Range(2, n)) + smallIm2(Range(2, m), Range(2, n)) - smallIm1(Range(2, m), Range(2, n))) / 4;
-	for (int a = 0; a < Height - 2; a++){
-		for (int b = 0; b < Width - 2; b++) {
-			G.at<double>(a, b) = (b + 1)*Iy.at<double>(a, b) + (a + 1)*Ix.at<double>(a, b);
-		}
-	}
-	sumA00 = Ix.mul(Ix); sumA01 = Iy.mul(Ix); sumA02 = Ix.mul(G); sumA10 = Ix.mul(Iy); sumA11 = Iy.mul(Iy); sumA12 = G.mul(Iy); sumA20 = Ix.mul(G); sumA21 = Iy.mul(G); sumA22 = G.mul(G);
-	sumB00 = Ix.mul(It); sumB10 = Iy.mul(It); sumB20 = G.mul(It);
-	A.at<double>(0, 0) = sum(sumA00)[0]; A.at<double>(0, 1) = sum(sumA01)[0]; A.at<double>(0, 2) = sum(sumA02)[0];
-	A.at<double>(1, 0) = sum(sumA10)[0]; A.at<double>(1, 1) = sum(sumA11)[0]; A.at<double>(1, 2) = sum(sumA12)[0];
-	A.at<double>(2, 0) = sum(sumA20)[0]; A.at<double>(2, 1) = sum(sumA21)[0]; A.at<double>(2, 2) = sum(sumA22)[0];
-	B.at<double>(0, 0) = sum(sumB00)[0];
-	B.at<double>(1, 0) = sum(sumB10)[0];
-	B.at<double>(2, 0) = sum(sumB20)[0];
-	C = A.inv()*B;	  //Since we have xA = b, so (xA)^T = b^T <=> A^T * x^T = b^T, so we can use cv::solve(A.t(), b.t(), x), and x.t() is an result:
-	return (-1 / C.at<double>(2, 0));
-}
+
 // Compute velocity command
 int compute_velocity(double t, int v){
 	double timetocontact=65;
